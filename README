@@ -1,3 +1,7 @@
 Deps:
 
+brew install portaudio
+
 pip install apiai
+pip install pyaudio
+
