@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+import pkgutil
 
 import os.path, sys, json, time
-from intents import reminders
-import routes
+import intents
 from threading import Timer
-# import pyaudio
+import pyaudio
 # from AppKit import NSSpeechSynthesizer
 import os
 from collections import deque
@@ -108,14 +108,13 @@ def main():
       string = response.read().decode('utf-8')
       json_obj = json.loads(string)
 
-      print json_obj
-
       answer = json_obj['result']['fulfillment']['speech']
 
-      intent = json_obj['result']['metadata']['intentName']
+      # intent = json_obj['result']['metadata']['intentName']
+      action = json_obj['result']['action']
       parameters = json_obj['result']['parameters']
-      print answer
-      router.handle_intent(intent, parameters)
+      speech = json_obj['result']['fulfillment']['speech']
+      router.handle_intent(action, parameters, speech)
       # os.system("say '" + answer + "'")
 
 
@@ -216,16 +215,30 @@ def listen_for_speech(threshold=THRESHOLD):
 
 
 class Router:
+  modules = []
+  package = intents
+  prefix = package.__name__ + "."
+  for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
+    modules.append(__import__(modname, fromlist="dummy"))
 
-  def handle_intent(self, intent, parameters):
-    """Dispatch method"""
+  def handle_intent(self, action, parameters, speech):
+    method = None
+    intent = action.split('.', 1)[0]
+    for module in Router.modules:
+      try:
+        method = getattr(module, str(intent))
+      except:
+        pass
     # Downcase first character of intent name
-    s = str(intent)
-    method_name = s[0].lower() + s[1:]
+    # s = str(intent)
+    # method_name = s[0].lower() + s[1:]
     # Get the method from intents. Default to a lambda.
-    method = getattr(reminders, str(method_name))
+    # method = getattr(reminders, str(method_name))
     # Call the method as we return it
-    method(parameters)
+    if method is not None:
+      method(parameters, speech)
+    else:
+      print "[ " + intent + " ] I'm not sure what to do..."
 
 if __name__ == '__main__':
   main()

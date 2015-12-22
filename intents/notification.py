@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 
 import time
+import os
 from datetime import datetime
 from datetime import date
 from threading import Timer
 
 activeReminders = []
 
-def reminders(parameters):
+def notification(parameters, speech):
+  activeReminders.append(Notification(parameters))
+  s = speech.encode('utf-8')
+  os.system("say '" + s + "'")
 
-  activeReminders.append(Reminder(parameters))
-
-class Reminder:
+class Notification:
 
   def __init__(self, parameters):
     self.parameters = parameters
@@ -28,4 +30,4 @@ class Reminder:
     Timer(self.reminderTimeInSeconds - self.currentTimeInSeconds, self.remindEvent, ()).start()
 
   def remindEvent(self):
-    os.system("say '" + self.text + "'")
+    os.system("say 'Hey Daniel, " + self.text + "'")
