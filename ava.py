@@ -131,7 +131,15 @@ def main():
       except:
         # No params found. That's fine, though.
         pass
-      print speech
+
+      print parameters
+      if parameters == {}:
+        try:
+          parameters = json_obj['result']['contexts'][0]['parameters']
+        except:
+          # No params found. That's fine, though.
+          pass
+
       router.handle_intent(action, speech, parameters)
 
     # listen_for_speech(THRESHOLD)
@@ -264,7 +272,7 @@ class Router:
     # method = getattr(reminders, str(method_name))
     # Call the method as we return it
     if method is not None:
-      method(parameters, speech)
+      method(speech, parameters)
     else:
       print "[ " + intent + " ] No action provided."
       if speech != "":
