@@ -8,7 +8,7 @@ from threading import Timer
 
 activeReminders = []
 
-def notification(parameters, speech):
+def notification(speech, parameters=None):
   activeReminders.append(Notification(parameters))
   s = speech.encode('utf-8')
   os.system("say '" + s + "'")

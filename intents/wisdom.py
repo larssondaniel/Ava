@@ -2,6 +2,6 @@
 
 import os
 
-def wisdom(parameters, speech):
+def wisdom(speech, parameters=None):
   s = speech.encode('utf-8')
   os.system("say '" + s + "'")

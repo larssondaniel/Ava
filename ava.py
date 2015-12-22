@@ -98,9 +98,16 @@ def main():
     # print ("Wait for response...")
     # response = request.getresponse()
 
-    request = ai.text_request()
+    # request = ai.text_request()
 
     while True:
+      # Set these to None in order to not risk reusing responses
+      answer = None
+      action = None
+      parameters = None
+      speech = None
+
+      request = ai.text_request()
       request.query = raw_input('Say something: ')
       response = request.getresponse()
 
@@ -108,17 +115,17 @@ def main():
       string = response.read().decode('utf-8')
       json_obj = json.loads(string)
 
-      answer = json_obj['result']['fulfillment']['speech']
-
-      # intent = json_obj['result']['metadata']['intentName']
       action = json_obj['result']['action']
-      parameters = json_obj['result']['parameters']
       speech = json_obj['result']['fulfillment']['speech']
-      router.handle_intent(action, parameters, speech)
-      # os.system("say '" + answer + "'")
+      try:
+        parameters = json_obj['result']['parameters']
+      except:
+        # No params found. That's fine, though.
+        pass
+      print speech
+      router.handle_intent(action, speech, parameters)
 
-
-          # listen_for_speech(THRESHOLD)
+    # listen_for_speech(THRESHOLD)
     # p = pyaudio.PyAudio()
 
     # stream = p.open(format=FORMAT,
@@ -221,7 +228,7 @@ class Router:
   for importer, modname, ispkg in pkgutil.iter_modules(package.__path__, prefix):
     modules.append(__import__(modname, fromlist="dummy"))
 
-  def handle_intent(self, action, parameters, speech):
+  def handle_intent(self, action, speech, parameters=None):
     method = None
     intent = action.split('.', 1)[0]
     for module in Router.modules:
@@ -238,7 +245,11 @@ class Router:
     if method is not None:
       method(parameters, speech)
     else:
-      print "[ " + intent + " ] I'm not sure what to do..."
+      print "[ " + intent + " ] No action provided."
+      if speech != "":
+        os.system("say '" + speech + "'")
+      else:
+        print "No speech provided either."
 
 if __name__ == '__main__':
   main()
