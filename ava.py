@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import pkgutil
 
+import socket
 import os.path, sys, json, time
 import intents
 from threading import Timer
@@ -19,6 +20,8 @@ except ImportError:
 
 import time
 import scipy.io.wavfile as wav
+
+REMOTE_SERVER = "www.google.com"
 
 # CHUNK = 512
 # FORMAT = pyaudio.paInt16
@@ -109,6 +112,12 @@ def main():
 
       request = ai.text_request()
       request.query = raw_input('Say something: ')
+
+      # Check connectivity
+      if not is_connected():
+        os.system("say 'I cant reach the Internet right now, Im sorry.'")
+        break
+
       response = request.getresponse()
 
       # Convert bytes to string type and string type to dict
@@ -220,6 +229,18 @@ def listen_for_speech(threshold=THRESHOLD):
 
     return response
 
+def is_connected():
+  try:
+    # see if we can resolve the host name -- tells us if there is
+    # a DNS listening
+    host = socket.gethostbyname(REMOTE_SERVER)
+    # connect to the host -- tells us if the host is actually
+    # reachable
+    s = socket.create_connection((host, 80), 2)
+    return True
+  except:
+     pass
+  return False
 
 class Router:
   modules = []
